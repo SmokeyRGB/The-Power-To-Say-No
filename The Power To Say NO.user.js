@@ -98,19 +98,19 @@
         applyProfile: function(profile) {
             const profiles = {
                 fast: {
-                    feedbackButtonDelay: 200,  // 0.2s (was 0.3s)
-                    dialogWaitDelay: 50,       // 0.05s (was 0.1s)
-                    autoClickDelay: 50,        // 0.05s (was 0.1s)
+                    feedbackButtonDelay: 150,  // 0.15s
+                    dialogWaitDelay: 30,       // 0.03s
+                    autoClickDelay: 30,        // 0.03s
                 },
                 medium: {
-                    feedbackButtonDelay: 300,  // 0.3s (default)
-                    dialogWaitDelay: 100,      // 0.1s (default)
-                    autoClickDelay: 100,       // 0.1s (default)
+                    feedbackButtonDelay: 200,  // 0.2s
+                    dialogWaitDelay: 50,      // 0.05s
+                    autoClickDelay: 50,       // 0.05s
                 },
                 slow: {
-                    feedbackButtonDelay: 500,  // 0.5s (safer)
-                    dialogWaitDelay: 200,      // 0.2s (safer)
-                    autoClickDelay: 150,       // 0.15s (safer)
+                    feedbackButtonDelay: 500,  // 0.5s
+                    dialogWaitDelay: 200,      // 0.2s
+                    autoClickDelay: 150,       // 0.15s
                 }
             };
             
