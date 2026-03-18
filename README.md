@@ -1,3 +1,11 @@
+## Installation of Userscripts
+
+1. Install [ViolentMonkey](https://violentmonkey.github.io/) browser extension
+2. Click the ViolentMonkey icon in your toolbar
+3. Click the '+' icon to create a new script
+4. Open any script file from this repo, and copy its content into the newly created ViolentMonkey script.
+5. (If not already enabled) Click "Enable" to activate the script
+
 # The Power to Say NO
 
 Let’s be honest: YouTube’s interface is designed to frustrate you.
@@ -7,14 +15,6 @@ By default, marking a video as "Not Interested" is a chore. You’re forced to n
 But the absurdity doesn't stop there. Once you finally find the option, to really give feedback to the algorithm, YouTube demands you to send your mouse on a journey over your whole desk requiring cursor to traverse the entire page for a simple checkbox select. It’s as if the platform actively discourages you from refining its algorithm, turning two necessary clicks into double the amount and giving you a repetitive strain injury from mouse movement.
 
 This ViolentMonkey script cuts through the nonsense. It bypasses the bureaucratic nightmare of YouTube’s UI, allowing you to instantly suppress unwanted content and provide feedback without the physical exertion of a mouse marathon. Stop wrestling with the interface and start actually controlling your feed.
-
-## Installation
-
-1. Install [ViolentMonkey](https://violentmonkey.github.io/) browser extension
-2. Click the ViolentMonkey icon in your toolbar
-3. Click the '+' icon to create a new script
-4. Open the script file from this repo (`The Power To Say NO.user.js`), and copy its content into the newly created ViolentMonkey script.
-5. (If not already enabled) Click "Enable" to activate the script
 
 ## Usage
 
@@ -60,14 +60,21 @@ Logs will be prefixed with `[NotInterested]` in the browser console.
 
 When you have many tabs open on YouTube, notification badges pile up and transform your tab bar into a chaotic mess of truncated titles like `[(5) Ho..] [(5) Th..] [(5) A n..]`. The YouTube Notification Wall userscript declutters this visual noise by automatically removing the notification count prefixes from each tab's title, restoring clarity to your browser window.
 
+## Logging
+
+The script logs found patterns to the browser console for debugging purposes. When a notification count pattern (e.g., `(5)`) is detected at the beginning of a page title, the console displays a message in the format: `YouTube Notification Wall - Found pattern: (5)Home`. This allows you to verify that the script is correctly identifying notification badges and processing them as expected.
+
+---
+---
+
 ## Author
 
 **SmokeyRGB**
 
 ## License
 
-This UserScript is provided as-is. Feel free to modify and use as needed.
+These UserScripts are provided as-is. Feel free to modify and use as needed.
 
 ## Disclaimer
 
-This script enhances YouTube's native "Not Interested" functionality. It does not bypass any YouTube features or violate YouTube's Terms of Service. Use responsibly.
+This scripts enhances YouTube's native functionalites or usage. It does not bypass any YouTube features or violate YouTube's Terms of Service. Use responsibly.
