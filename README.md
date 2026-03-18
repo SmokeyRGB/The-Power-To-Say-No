@@ -2,9 +2,9 @@
 
 Let’s be honest: YouTube’s interface is designed to frustrate you.
 
-By default, marking a video as "Not Interested" is a chore. You’re forced to navigate a nested menu structure hidden behind a "more options" dropdown on every single video card. It’s tedious, unnecessary, and clearly built for convenience’s sake.
+By default, marking a video as "Not Interested" is a chore. You’re forced to navigate a nested menu structure hidden behind a "more options" dropdown on every single video card. It’s tedious, unnecessary, and clearly not designed for convenience.
 
-But the absurdity doesn't stop there. Once you finally find the option, YouTube demands you to send your mouse to a journey over your whole desk requiring cursor to traverse the entire page. It’s as if the platform actively discourages you from refining its algorithm.
+But the absurdity doesn't stop there. Once you finally find the option, to really give feedback to the algorithm, YouTube demands you to send your mouse on a journey over your whole desk requiring cursor to traverse the entire page for a simple checkbox select. It’s as if the platform actively discourages you from refining its algorithm, turning two necessary clicks into double the amount and giving you a repetitive strain injury from mouse movement.
 
 This ViolentMonkey script cuts through the nonsense. It bypasses the bureaucratic nightmare of YouTube’s UI, allowing you to instantly suppress unwanted content and provide feedback without the physical exertion of a mouse marathon. Stop wrestling with the interface and start actually controlling your feed.
 
@@ -18,7 +18,7 @@ This ViolentMonkey script cuts through the nonsense. It bypasses the bureaucrati
 
 ## Usage
 
-1. Navigate to any YouTube page with video thumbnails
+1. Navigate to YouTube's Homepage with video thumbnails
 2. Hover over any video thumbnail
 3. A small `❌` button will appear (becomes visible on hover)
 4. Click the button to mark the video as "Not Interested"
@@ -26,7 +26,7 @@ This ViolentMonkey script cuts through the nonsense. It bypasses the bureaucrati
    - Open the video options menu
    - Select "Not Interested"
    - Move the feedback form to the video card for easier access
-   - Auto-submit when you select a reason and click "Send"
+   - Auto-submit when you select a reason
 
 ## Troubleshooting
 
