@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         The Power to Say NO v3.5
+// @name         The Power to Say NO v4.0
 // @namespace    http://violentmonkey.net/
-// @version      3.5
+// @version      4.0
 // @description  Enhanced YouTube "Not Interested" functionality with improved stability and multi-language support
 // @author       SmokeyRGB
 // @match        https://www.youtube.com/*
@@ -21,6 +21,123 @@
         POLL_INTERVAL: 50, // Polling interval for element detection
         DEBUG: false, // Set to true for verbose logging
     };
+ 
+    // Adaptive timing system
+    const ADAPTIVE_TIMING = {
+        // Default timings (medium speed)
+        feedbackButtonDelay: 300,
+        dialogWaitDelay: 100,
+        autoClickDelay: 100,
+        
+        // Initialize adaptive timing based on connection and performance
+        init: function() {
+            const profile = this.detectSpeedProfile();
+            log.info(`Speed profile detected: ${profile}`);
+            this.applyProfile(profile);
+        },
+        
+        // Detect speed profile based on connection and performance
+        detectSpeedProfile: function() {
+            let score = 0;
+            
+            // Check Network Information API (if available)
+            if ('connection' in navigator) {
+                const conn = navigator.connection;
+                
+                // Effective connection type
+                if (conn.effectiveType) {
+                    const typeScores = {
+                        'slow-2g': -2,
+                        '2g': -1,
+                        '3g': 0,
+                        '4g': 1
+                    };
+                    score += typeScores[conn.effectiveType] || 0;
+                    log.info(`Connection type: ${conn.effectiveType} (score: ${typeScores[conn.effectiveType] || 0})`);
+                }
+                
+                // Downlink speed (Mbps)
+                if (conn.downlink !== undefined) {
+                    if (conn.downlink > 10) score += 2; // Very fast
+                    else if (conn.downlink > 5) score += 1; // Fast
+                    else if (conn.downlink < 1) score -= 1; // Slow
+                    log.info(`Downlink speed: ${conn.downlink} Mbps`);
+                }
+                
+                // RTT (Round Trip Time) - lower is better
+                if (conn.rtt !== undefined) {
+                    if (conn.rtt < 100) score += 1; // Low latency
+                    else if (conn.rtt > 300) score -= 1; // High latency
+                    log.info(`RTT: ${conn.rtt}ms`);
+                }
+            }
+            
+            // Check device memory (if available)
+            if ('deviceMemory' in navigator) {
+                const memory = navigator.deviceMemory;
+                if (memory >= 8) score += 1; // High-end device
+                else if (memory <= 2) score -= 1; // Low-end device
+                log.info(`Device memory: ${memory}GB`);
+            }
+            
+            // Check hardware concurrency (CPU cores)
+            if ('hardwareConcurrency' in navigator) {
+                const cores = navigator.hardwareConcurrency;
+                if (cores >= 8) score += 1; // High-end CPU
+                else if (cores <= 2) score -= 1; // Low-end CPU
+                log.info(`CPU cores: ${cores}`);
+            }
+            
+            // Determine profile based on score
+            if (score >= 3) return 'fast';
+            if (score <= -2) return 'slow';
+            return 'medium';
+        },
+        
+        // Apply timing profile
+        applyProfile: function(profile) {
+            const profiles = {
+                fast: {
+                    feedbackButtonDelay: 200,  // 0.2s (was 0.3s)
+                    dialogWaitDelay: 50,       // 0.05s (was 0.1s)
+                    autoClickDelay: 50,        // 0.05s (was 0.1s)
+                },
+                medium: {
+                    feedbackButtonDelay: 300,  // 0.3s (default)
+                    dialogWaitDelay: 100,      // 0.1s (default)
+                    autoClickDelay: 100,       // 0.1s (default)
+                },
+                slow: {
+                    feedbackButtonDelay: 500,  // 0.5s (safer)
+                    dialogWaitDelay: 200,      // 0.2s (safer)
+                    autoClickDelay: 150,       // 0.15s (safer)
+                }
+            };
+            
+            const selectedProfile = profiles[profile];
+            Object.assign(this, selectedProfile);
+            
+            log.info('Adaptive timing applied:', selectedProfile);
+        },
+        
+        // Dynamically adjust based on success/failure
+        adjustOnFailure: function() {
+            // If operations are failing, slow down
+            this.feedbackButtonDelay = Math.min(this.feedbackButtonDelay * 1.2, 800);
+            this.dialogWaitDelay = Math.min(this.dialogWaitDelay * 1.2, 300);
+            log.warn('Timing adjusted slower due to failures');
+        },
+        
+        adjustOnSuccess: function() {
+            // If operations are succeeding, we can try speeding up slightly
+            this.feedbackButtonDelay = Math.max(this.feedbackButtonDelay * 0.95, 150);
+            this.dialogWaitDelay = Math.max(this.dialogWaitDelay * 0.95, 50);
+            log.info('Timing optimized based on success');
+        }
+    };
+    
+    // Initialize adaptive timing
+    ADAPTIVE_TIMING.init();
  
     // Utility: Enhanced logging
     const log = {
@@ -392,11 +509,8 @@
                 feedbackButton.addEventListener('click', async (e) => {
                     log.info('Feedback button clicked - intercepting to move form');
                     
-                    // Let YouTube open and populate the dialog first
-                    // Adjust this value to make it faster/slower (in milliseconds)
-                    // 300ms = 0.3 seconds (faster)
-                    // 600ms = 0.6 seconds (safer but slower)
-                    await new Promise(resolve => setTimeout(resolve, 300));
+                    // Use adaptive timing based on connection speed
+                    await new Promise(resolve => setTimeout(resolve, ADAPTIVE_TIMING.feedbackButtonDelay));
                     
                     // Now move it to the card
                     const success = await moveFeedbackFormToCard(card);
@@ -404,11 +518,14 @@
                     // If moving failed, just let YouTube handle it normally
                     if (!success) {
                         log.warn('Could not move feedback form, letting YouTube handle it');
+                        ADAPTIVE_TIMING.adjustOnFailure(); // Slow down for next time
                         // Re-show the dialog if it was hidden
                         const dialog = document.querySelector('tp-yt-paper-dialog');
                         if (dialog) dialog.style.display = '';
                         const backdrop = document.querySelector('tp-yt-iron-overlay-backdrop');
                         if (backdrop) backdrop.style.display = '';
+                    } else {
+                        ADAPTIVE_TIMING.adjustOnSuccess(); // Speed up for next time
                     }
                 }, { once: true }); // Only fire once
                 
@@ -416,7 +533,7 @@
                 log.info('Auto-clicking feedback button');
                 setTimeout(() => {
                     feedbackButton.click();
-                }, 100); // Small delay to ensure everything is set up
+                }, ADAPTIVE_TIMING.autoClickDelay); // Use adaptive timing
             }
  
         } catch (error) {
@@ -427,9 +544,8 @@
     // Move feedback form from popup dialog to card location
     async function moveFeedbackFormToCard(card) {
         try {
-            // Give YouTube a moment to create the dialog
-            // You can reduce this if it feels too slow (minimum ~50ms recommended)
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // Give YouTube a moment to create the dialog (adaptive timing)
+            await new Promise(resolve => setTimeout(resolve, ADAPTIVE_TIMING.dialogWaitDelay));
             
             // Look for the feedback renderer - it might be in a dialog or already rendered
             let feedbackRenderer = document.querySelector('tp-yt-paper-dialog ytd-dismissal-follow-up-renderer') ||
