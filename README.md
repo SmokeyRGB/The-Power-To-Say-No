@@ -56,6 +56,10 @@ const CONFIG = {
 
 Logs will be prefixed with `[NotInterested]` in the browser console.
 
+# YouTube Notification Wall
+
+When you have many tabs open on YouTube, notification badges pile up and transform your tab bar into a chaotic mess of truncated titles like `[(5) Ho..] [(5) Th..] [(5) A n..]`. The YouTube Notification Wall userscript declutters this visual noise by automatically removing the notification count prefixes from each tab's title, restoring clarity to your browser window.
+
 ## Author
 
 **SmokeyRGB**
