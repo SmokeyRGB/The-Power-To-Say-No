@@ -388,6 +388,7 @@
             }
  
             if (feedbackButton) {
+                // Set up the click handler first
                 feedbackButton.addEventListener('click', async (e) => {
                     log.info('Feedback button clicked - intercepting to move form');
                     
@@ -410,6 +411,12 @@
                         if (backdrop) backdrop.style.display = '';
                     }
                 }, { once: true }); // Only fire once
+                
+                // Automatically click the feedback button to streamline the flow
+                log.info('Auto-clicking feedback button');
+                setTimeout(() => {
+                    feedbackButton.click();
+                }, 100); // Small delay to ensure everything is set up
             }
  
         } catch (error) {
