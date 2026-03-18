@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         The Power to Say NO v3.5
-// @namespace    http://tampermonkey.net/
+// @namespace    http://violentmonkey.net/
 // @version      3.5
 // @description  Enhanced YouTube "Not Interested" functionality with improved stability and multi-language support
 // @author       SmokeyRGB
@@ -11,7 +11,7 @@
 
 (function () {
     'use strict';
-
+ 
     // Configuration
     const CONFIG = {
         BUTTON_EMOJI: '❌',
@@ -21,14 +21,14 @@
         POLL_INTERVAL: 50, // Polling interval for element detection
         DEBUG: false, // Set to true for verbose logging
     };
-
+ 
     // Utility: Enhanced logging
     const log = {
         info: (...args) => CONFIG.DEBUG && console.log('[NotInterested]', ...args),
         warn: (...args) => console.warn('[NotInterested]', ...args),
         error: (...args) => console.error('[NotInterested]', ...args),
     };
-
+ 
     // Utility: Wait for element with timeout
     function waitForElement(selector, parent = document, timeout = CONFIG.WAIT_TIMEOUT) {
         return new Promise((resolve, reject) => {
@@ -51,7 +51,7 @@
             check();
         });
     }
-
+ 
     // Utility: Try multiple selectors
     function querySelector(selectors, parent = document) {
         const selectorArray = Array.isArray(selectors) ? selectors : [selectors];
@@ -64,7 +64,7 @@
         }
         return null;
     }
-
+ 
     // Utility: Find element by text content (language-independent for common patterns)
     function findByTextPattern(elements, patterns) {
         const patternArray = Array.isArray(patterns) ? patterns : [patterns];
@@ -78,7 +78,7 @@
             });
         });
     }
-
+ 
     // Get menu button with multiple fallback selectors
     function getMenuButton(card) {
         const selectors = [
@@ -90,7 +90,7 @@
         ];
         return querySelector(selectors, card);
     }
-
+ 
     // Find "Not Interested" menu item with multiple strategies
     function findNotInterestedItem() {
         // CRITICAL: Only look in the currently visible popup menu
@@ -106,7 +106,7 @@
         }
         
         log.info('Found popup menu');
-
+ 
         // Strategy 1: Try new menu structure (yt-list-item-view-model)
         let menuItems = popup.querySelectorAll('yt-list-item-view-model');
         
@@ -115,14 +115,14 @@
             menuItems = popup.querySelectorAll('tp-yt-paper-item, ytd-menu-service-item-renderer');
             log.info('Using legacy menu structure');
         }
-
+ 
         if (menuItems.length === 0) {
             log.warn('No menu items found in popup');
             return null;
         }
-
+ 
         log.info(`Found ${menuItems.length} menu items in visible popup`);
-
+ 
         // Try to find by common text patterns (multi-language)
         // Common patterns: "Not interested", "Kein Interesse", "Pas intéressé", etc.
         const notInterestedPatterns = [
@@ -134,14 +134,14 @@
             /興味なし/i, // Japanese
             /不感兴趣/i, // Chinese
         ];
-
+ 
         let item = findByTextPattern(menuItems, notInterestedPatterns);
         
         if (item) {
             log.info('Found Not Interested by text pattern');
             return item;
         }
-
+ 
         // Fallback: Find by SVG icon pattern
         // "Not Interested" has a specific circle-with-slash icon
         for (let i = 0; i < menuItems.length; i++) {
@@ -156,7 +156,7 @@
                 }
             }
         }
-
+ 
         // Last resort: positional fallback
         // Based on the HTML, "Kein Interesse" is typically the 7th item (index 6)
         // Structure: Playlist, Watch Later, Add to Playlist, Download, Share, Not Interested, Don't Recommend, Report
@@ -164,11 +164,11 @@
             log.info('Using positional fallback for Not Interested (index 6)');
             return menuItems[6];
         }
-
+ 
         log.warn('Could not find Not Interested item');
         return null;
     }
-
+ 
     // Find feedback submit button
     function findFeedbackButton() {
         const patterns = [
@@ -179,11 +179,11 @@
             /inviare/i,
             /送信/i,
         ];
-
+ 
         const buttons = document.querySelectorAll('#buttons button[aria-label], ytd-button-renderer button');
         return findByTextPattern(buttons, patterns);
     }
-
+ 
     // Find undo/back button
     function findUndoButton() {
         const patterns = [
@@ -194,11 +194,11 @@
             /annulla/i,
             /元に戻す/i,
         ];
-
+ 
         const buttons = document.querySelectorAll('#buttons button[aria-label], ytd-button-renderer button');
         return findByTextPattern(buttons, patterns);
     }
-
+ 
     // Add custom "Not Interested" button to video card
     function addCustomButton(card) {
         // Check if button already exists
@@ -210,7 +210,7 @@
         if (card.getAttribute('is-dismissed') === 'true' || card.style.display === 'none') {
             return;
         }
-
+ 
         const button = document.createElement('button');
         button.textContent = CONFIG.BUTTON_EMOJI;
         button.title = 'Not Interested';
@@ -236,25 +236,25 @@
             transition: opacity 0.3s, transform 0.2s;
             z-index: 10;
         `;
-
+ 
         // Hover effects
         button.addEventListener('mouseenter', () => {
             button.style.opacity = '1';
             button.style.transform = 'scale(1.4)';
         });
-
+ 
         button.addEventListener('mouseleave', () => {
             button.style.opacity = '0.1';
             button.style.transform = 'scale(1)';
         });
-
+ 
         // Click handler
         button.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             handleNotInterestedClick(card, button);
         });
-
+ 
         // Find container and append button
         const containers = [
             '#content',
@@ -271,7 +271,7 @@
             log.warn('Could not find container for button');
         }
     }
-
+ 
     // Handle "Not Interested" click
     async function handleNotInterestedClick(card, button) {
         // Prevent multiple simultaneous clicks
@@ -284,7 +284,7 @@
         
         try {
             log.info('Not Interested clicked');
-
+ 
             // Close any existing open menus first
             const existingPopups = document.querySelectorAll('tp-yt-iron-dropdown');
             existingPopups.forEach(popup => {
@@ -296,16 +296,16 @@
             
             // Wait a moment for menus to close
             await new Promise(resolve => setTimeout(resolve, 150));
-
+ 
             // Step 1: Click menu button
             const menuButton = getMenuButton(card);
             if (!menuButton) {
                 throw new Error('Menu button not found');
             }
-
+ 
             menuButton.click();
             log.info('Menu opened');
-
+ 
             // Step 2: Wait for the menu popup to become visible
             // The menu structure is: tp-yt-iron-dropdown > yt-sheet-view-model
             await waitForElement(
@@ -327,16 +327,16 @@
             if (!notInterestedItem) {
                 throw new Error('Not Interested menu item not found');
             }
-
+ 
             notInterestedItem.click();
             log.info('Not Interested clicked');
-
+ 
             // Hide the custom button
             button.style.display = 'none';
-
+ 
             // Step 4: Handle feedback form
             await handleFeedbackFlow(card);
-
+ 
         } catch (error) {
             log.error('Error in handleNotInterestedClick:', error);
             // Restore button visibility on error
@@ -350,7 +350,7 @@
             }, 500);
         }
     }
-
+ 
     // Handle feedback form flow
     async function handleFeedbackFlow(card) {
         try {
@@ -360,14 +360,14 @@
                 card,
                 2000
             );
-
+ 
             log.info('Dismissed notification found');
-
+ 
             // Find the feedback button (the filled button)
             const buttons = card.querySelectorAll('notification-multi-action-renderer button');
             let feedbackButton = null;
             let undoButton = null;
-
+ 
             buttons.forEach(button => {
                 const text = button.textContent.toLowerCase();
                 if (text.includes('feedback') || text.includes('senden')) {
@@ -376,7 +376,7 @@
                     undoButton = button;
                 }
             });
-
+ 
             if (undoButton) {
                 undoButton.addEventListener('click', () => {
                     log.info('Undo clicked');
@@ -386,7 +386,7 @@
                     }
                 }, { once: true }); // Only fire once
             }
-
+ 
             if (feedbackButton) {
                 feedbackButton.addEventListener('click', async (e) => {
                     log.info('Feedback button clicked - intercepting to move form');
@@ -411,12 +411,12 @@
                     }
                 }, { once: true }); // Only fire once
             }
-
+ 
         } catch (error) {
             log.warn('Feedback flow error:', error);
         }
     }
-
+ 
     // Move feedback form from popup dialog to card location
     async function moveFeedbackFormToCard(card) {
         try {
@@ -443,9 +443,9 @@
                     return false;
                 }
             }
-
+ 
             log.info('Feedback renderer found');
-
+ 
             // Check if it's already populated
             let checkboxes = feedbackRenderer.querySelectorAll('tp-yt-paper-checkbox');
             
@@ -477,9 +477,9 @@
                     return false;
                 }
             }
-
+ 
             log.info('Feedback renderer is ready');
-
+ 
             // Find the notification area in the card where we'll place the form
             const notificationArea = card.querySelector('notification-multi-action-renderer');
             
@@ -487,7 +487,7 @@
                 log.warn('Notification area not found in card');
                 return false;
             }
-
+ 
             // Store reference to the original parent so we can restore it later
             const originalParent = feedbackRenderer.parentElement;
             
@@ -497,14 +497,14 @@
                 backdrop.style.display = 'none';
                 log.info('Backdrop hidden');
             }
-
+ 
             // Hide the dialog container
             const dialog = document.querySelector('tp-yt-paper-dialog');
             if (dialog) {
                 dialog.style.display = 'none';
                 log.info('Dialog hidden');
             }
-
+ 
             // Clear the notification area
             while (notificationArea.firstChild) {
                 notificationArea.removeChild(notificationArea.firstChild);
@@ -513,20 +513,20 @@
             // MOVE (not clone) the actual feedback renderer to the card
             notificationArea.appendChild(feedbackRenderer);
             feedbackRenderer.style.cssText = 'background: transparent; padding: 16px;';
-
+ 
             log.info('Feedback form moved to card');
-
+ 
             // Setup auto-submit on checkbox click
             setupAutoSubmitWithRestore(feedbackRenderer, card, originalParent, dialog, backdrop);
             
             return true;
-
+ 
         } catch (error) {
             log.error('Error moving feedback form to card:', error);
             return false;
         }
     }
-
+ 
     // Setup auto-submit when feedback checkbox is clicked, with element restoration
     function setupAutoSubmitWithRestore(feedbackForm, card, originalParent, dialog, backdrop) {
         // Find the buttons container
@@ -574,21 +574,21 @@
         } else {
             log.info('Send button found successfully');
         }
-
+ 
         // Completely hide the buttons container
         if (buttonsContainer) {
             buttonsContainer.style.display = 'none';
             log.info('Buttons container hidden');
         }
-
+ 
         // Find all checkboxes
         const checkboxes = feedbackForm.querySelectorAll('tp-yt-paper-checkbox, ytd-dismissal-reason-text-renderer');
-
+ 
         log.info(`Found ${checkboxes.length} feedback checkboxes`);
-
+ 
         // Track if we've already submitted
         let submitted = false;
-
+ 
         checkboxes.forEach((checkbox) => {
             checkbox.addEventListener('click', () => {
                 if (submitted) {
@@ -646,22 +646,22 @@
             });
         });
     }
-
+ 
     // Add buttons to all video cards
     function addCustomButtons() {
         const videoCards = document.querySelectorAll(
             'ytd-rich-item-renderer, ytd-grid-video-renderer, ytd-video-renderer'
         );
-
+ 
         if (videoCards.length === 0) {
             log.warn('No video cards found');
             return;
         }
-
+ 
         log.info(`Found ${videoCards.length} video cards`);
         videoCards.forEach(addCustomButton);
     }
-
+ 
     // Observe video grid for changes
     function observeVideoGrid() {
         // Try multiple possible grid containers
@@ -671,18 +671,18 @@
             '#contents',
             'ytd-browse',
         ];
-
+ 
         const targetNode = querySelector(gridSelectors);
-
+ 
         if (!targetNode) {
             log.warn('Video grid not found, retrying...');
             setTimeout(observeVideoGrid, 1000);
             return;
         }
-
+ 
         // Initial button addition
         addCustomButtons();
-
+ 
         // Observe for new video cards
         const observer = new MutationObserver((mutations) => {
             // Debounce to avoid excessive calls
@@ -691,15 +691,15 @@
                 addCustomButtons();
             }, 200);
         });
-
+ 
         observer.observe(targetNode, {
             childList: true,
             subtree: true,
         });
-
+ 
         log.info('Observer attached to video grid');
     }
-
+ 
     // Initialize script
     function init() {
         log.info('Initializing...');
@@ -710,7 +710,7 @@
         } else {
             observeVideoGrid();
         }
-
+ 
         // Also observe on navigation changes (YouTube SPA)
         let lastUrl = location.href;
         new MutationObserver(() => {
@@ -722,7 +722,7 @@
             }
         }).observe(document.body, { childList: true, subtree: true });
     }
-
+ 
     // Start
     init();
 })();
