@@ -15,7 +15,7 @@
     (new MutationObserver(check)).observe(document, {childList: true, subtree: true});
 
     function check(changes, observer) {
-        if(document.querySelector('.yt-spec-icon-badge-shape__badge')) {
+        if(document.querySelector('.ytSpecIconBadgeShapeBadge')) {
             //observer.disconnect();
 
         // Get the current website title
